@@ -8,12 +8,11 @@ Confidential and Proprietary - Protected under copyright and other laws.
 
 using UnityEngine;
 using Vuforia;
-using System.Collections;
 
 /// <summary>
 /// A custom handler that implements the ITrackableEventHandler interface.
-/// 
-/// Changes made to this file could be overwritten when upgrading the Vuforia version. 
+///
+/// Changes made to this file could be overwritten when upgrading the Vuforia version.
 /// When implementing custom event handler behavior, consider inheriting from this class instead.
 /// </summary>
 public class DefaultTrackableEventHandler : MonoBehaviour, ITrackableEventHandler
@@ -21,6 +20,8 @@ public class DefaultTrackableEventHandler : MonoBehaviour, ITrackableEventHandle
     #region PROTECTED_MEMBER_VARIABLES
 
     protected TrackableBehaviour mTrackableBehaviour;
+    protected TrackableBehaviour.Status m_PreviousStatus;
+    protected TrackableBehaviour.Status m_NewStatus;
 
     #endregion // PROTECTED_MEMBER_VARIABLES
 
@@ -51,6 +52,9 @@ public class DefaultTrackableEventHandler : MonoBehaviour, ITrackableEventHandle
         TrackableBehaviour.Status previousStatus,
         TrackableBehaviour.Status newStatus)
     {
+        m_PreviousStatus = previousStatus;
+        m_NewStatus = newStatus;
+
         if (newStatus == TrackableBehaviour.Status.DETECTED ||
             newStatus == TrackableBehaviour.Status.TRACKED ||
             newStatus == TrackableBehaviour.Status.EXTENDED_TRACKED)
@@ -79,36 +83,23 @@ public class DefaultTrackableEventHandler : MonoBehaviour, ITrackableEventHandle
 
     protected virtual void OnTrackingFound()
     {
-        StartCoroutine(EnableRenderRoutine());
-    }
-
-
-    IEnumerator EnableRenderRoutine()
-    {
         var rendererComponents = GetComponentsInChildren<Renderer>(true);
         var colliderComponents = GetComponentsInChildren<Collider>(true);
         var canvasComponents = GetComponentsInChildren<Canvas>(true);
-        var particleRendererComponents = transform.Find("Particles").GetComponentsInChildren<Renderer>();
 
-
-        // Enable particle renderers
-        foreach (var c in particleRendererComponents)
-            c.enabled = true;
-
-        // Enable canvas':
-        foreach (var component in canvasComponents)
+        // Enable rendering:
+        foreach (var component in rendererComponents)
             component.enabled = true;
 
         // Enable colliders:
         foreach (var component in colliderComponents)
             component.enabled = true;
-        yield return new WaitForSeconds(1);
-        // Enable rendering:
-        foreach (var component in rendererComponents)
+
+        // Enable canvas':
+        foreach (var component in canvasComponents)
             component.enabled = true;
-
-
     }
+
 
     protected virtual void OnTrackingLost()
     {
